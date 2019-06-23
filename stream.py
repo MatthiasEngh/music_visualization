@@ -1,4 +1,5 @@
 import _thread
+import matplotlib.pyplot as plt
 import numpy
 import pyaudio
 import struct
@@ -52,14 +53,19 @@ streamRunning = True
 
 hasPrint = False
 
+fig, ax = plt.subplots()
+
 def visualize(frameCount, rawData):
   global hasPrint
-  if hasPrint: return
   data = struct.unpack("<%dh" % (2 * frameCount), rawData)
   values = numpy.array(data)
   values.shape = (frameCount, 2)
   channels = numpy.transpose(values)
-  hasPrint = True
+  ax.clear()
+  ax.plot(channels[0])
+  ax.plot(channels[1])
+  ax.set_ylim(-15000, 15000)
+  plt.pause(0.01)
 
 def run_thread():
   global soundData
@@ -71,8 +77,8 @@ def run_thread():
 
 # the running
 
-_thread.start_new_thread(run_thread, ())
 stream.start_stream()
+run_thread()
 
 time.sleep(3)
 
