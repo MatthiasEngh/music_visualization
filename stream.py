@@ -12,13 +12,25 @@ pyAudioInstance = pyaudio.PyAudio()
 
 soundData = {
   'read': True,
-  'timeInfo': None
+  'timeInfo': {},
+  'rawData': []
 }
+
+audioFormat = pyAudioInstance.get_format_from_width(wf.getsampwidth())
+channels = wf.getnchannels()
+frameRate = wf.getframerate()
+
+
+print("format: ", audioFormat)
+print("channels: ", channels)
+print("frame rate: ", frameRate)
 
 # the stream stuff
 
 def talk(**kwargs):
   global soundData
+  soundData['frameCount'] = kwargs['frameCount']
+  soundData['rawData'] = kwargs['rawData']
   soundData['read'] = False
   soundData['timeInfo'] = kwargs['timeInfo']
 
@@ -39,12 +51,27 @@ stream = pyAudioInstance.open(
 
 streamRunning = True
 
+hasPrint = False
+
+fig, ax = plt.subplots()
+
+def visualize(frameCount, rawData, timeInfo):
+  global hasPrint
+  global ax, fig
+  if hasPrint: return
+  print(timeInfo)
+  data = struct.unpack("<%dh" % (2 * frameCount), rawData)
+  values = numpy.array(data)
+  values.shape = (frameCount, 2)
+  channels = numpy.transpose(values)
+  hasPrint = True
+
 def run_thread():
   global soundData
   global streamRunning
   while streamRunning:
     if not soundData['read']:
-      print(soundData['timeInfo'])
+      visualize(soundData['frameCount'], soundData['rawData'], soundData['timeInfo'])
       soundData['read'] = True
 
 # the running
