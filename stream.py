@@ -1,5 +1,4 @@
 import _thread
-import matplotlib.pyplot as plt
 import numpy
 import pyaudio
 import struct
@@ -53,13 +52,9 @@ streamRunning = True
 
 hasPrint = False
 
-fig, ax = plt.subplots()
-
-def visualize(frameCount, rawData, timeInfo):
+def visualize(frameCount, rawData):
   global hasPrint
-  global ax, fig
   if hasPrint: return
-  print(timeInfo)
   data = struct.unpack("<%dh" % (2 * frameCount), rawData)
   values = numpy.array(data)
   values.shape = (frameCount, 2)
@@ -71,7 +66,7 @@ def run_thread():
   global streamRunning
   while streamRunning:
     if not soundData['read']:
-      visualize(soundData['frameCount'], soundData['rawData'], soundData['timeInfo'])
+      visualize(soundData['frameCount'], soundData['rawData'])
       soundData['read'] = True
 
 # the running
